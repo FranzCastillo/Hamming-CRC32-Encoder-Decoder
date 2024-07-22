@@ -1,5 +1,6 @@
 import { promises as fs } from 'fs';
 import hamming74 from './Hamming.js';
+import crc32 from './CRC32.js';
 
 async function main () {
     try {
@@ -10,14 +11,19 @@ async function main () {
 
         const args = process.argv.slice(2);
 
-        const encoder = "hamming" | "crc";
-
         let encodedCodes;
 
         if (args.length > 0) {
             if (args[0] === "crc") {
                 console.log('Using CRC encoder');
-                //TODO: Implement CRC encoder
+                if (args.length < 2) {
+                    throw new Error('Generator polynomial is not provided, use: yarn start crc <generator>');
+                }
+                const generator = args[1];
+                encodedCodes = codes.map(code => {
+                    return crc32(code, generator).toString(16);
+                });
+                
             } else {
                 console.log('Using Hamming encoder');
                 encodedCodes = codes.map(code => {
