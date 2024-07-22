@@ -1,0 +1,12 @@
+{
+    "type": "module",
+    "name": "encoder",
+    "version": "1.0.0",
+    "description": "Hamming and CRC32 encoder",
+    "main": "src/sender/Main.js",
+    "scripts": {
+        "start": "node src/sender/Main.js"
+    },
+    "author": "Andrés Montoya",
+    "license": "MIT"
+}
