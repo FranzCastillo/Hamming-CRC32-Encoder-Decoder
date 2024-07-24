@@ -27,7 +27,6 @@ def main(receiver_type: str, n: str = None, m: str = None, generator: str = None
             print(f"Data: {data}")
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description="Specify the type of receiver to be used.")
     parser.add_argument("receiver_type", type=str, help="The type of receiver (e.g., 'Hamming' or 'CRC')")

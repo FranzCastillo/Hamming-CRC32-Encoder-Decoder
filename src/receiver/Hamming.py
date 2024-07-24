@@ -33,6 +33,15 @@ class Hamming(Receiver):
             raise ValueError(f"Data length should be {self.n}")
         return [int(x) for x in data]
 
+    def _extract_data(self, data: list[int]) -> str:
+        """
+        Extract data bits
+        :param data: Data
+        :return: Data bits
+        """
+        parity_bits = [self.n + 1 - 2 ** i for i in range(self.k)]
+        return ''.join([str(data[i]) for i in range(self.n) if i + 1 not in parity_bits])
+
     def decode(self, data: str) -> Tuple[str, bool, int]:
         """
         Decode Hamming code
@@ -54,20 +63,20 @@ class Hamming(Receiver):
 
         # Check for error
         error_pos = ''  # Keeps track of the error position in binary representation
-        for i in range(self.k):  # Check for each parity bit
-            count = 0  # Count of 1s
-            for j in range(len(to_check)):  # Check for each data bit
-                count += int(to_check[j][i])
-            error_pos += str(count % 2)  # Check parity
 
-        # Convert binary to decimal
-        error_pos = int(error_pos, 2)
-        data_transmitted = ''.join([str(x) for x in data[:self.m]])
+        for i in range(self.k):
+            count = 0
+            for position in to_check:
+                count += int(position[i])
+            error_pos += str(count % 2)
 
-        if error_pos == 0:  # No error
-            return data_transmitted, False, error_pos
+        # Convert binary to decimal and invert it
+        error_pos_normal = int(error_pos, 2)
+        error_pos_inverted = (self.n + 1) - int(error_pos, 2)
 
-        data[error_pos - 1] = 1 - data[error_pos - 1]  # Flip the bit
-        data_transmitted = ''.join([str(x) for x in data[:self.m]])
+        if error_pos_normal == 0:  # No error
+            return ''.join([str(c) for c in data]), False, error_pos_normal
 
-        return data_transmitted, True, error_pos
+        data[error_pos_inverted - 1] = 1 - data[error_pos_inverted - 1]  # Flip the bit
+
+        return ''.join([str(c) for c in data]), True, error_pos_normal
