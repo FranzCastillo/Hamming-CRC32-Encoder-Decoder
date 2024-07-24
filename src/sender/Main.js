@@ -1,5 +1,5 @@
 import { promises as fs } from 'fs';
-import hamming74 from './Hamming.js';
+import hamming from './Hamming.js';
 import crc32 from './CRC32.js';
 
 async function main () {
@@ -26,9 +26,14 @@ async function main () {
                 
             } else {
                 console.log('Using Hamming encoder');
+                if (args.length < 3) {
+                    throw new Error('Generator polynomial is not provided, use: yarn start hamming <n> <m>');
+                }
+                const n = parseInt(args[1]);
+                const m = parseInt(args[2]);
                 encodedCodes = codes.map(code => {
                     const bits = code.split('').map(Number);
-                    return hamming74(bits).join('');
+                    return hamming(bits, n, m).join('');
                 });
             }
         }
