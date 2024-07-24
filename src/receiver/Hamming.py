@@ -1,4 +1,5 @@
 from typing import Tuple
+from Receiver import Receiver
 
 
 def to_binary(num: int, padding: int = 0) -> str:
@@ -11,7 +12,7 @@ def to_binary(num: int, padding: int = 0) -> str:
     return (bin(num)[2:]).zfill(padding)  # Remove the prefix '0b'
 
 
-class Hamming:
+class Hamming(Receiver):
     def __init__(self, n: int = 7, m: int = 4):
         """
         Hamming(n, m) code
@@ -66,7 +67,6 @@ class Hamming:
         if error_pos == 0:  # No error
             return data_transmitted, False, error_pos
 
-        print(f"Error at position {error_pos}")
         data[error_pos - 1] = 1 - data[error_pos - 1]  # Flip the bit
         data_transmitted = ''.join([str(x) for x in data[:self.m]])
 
