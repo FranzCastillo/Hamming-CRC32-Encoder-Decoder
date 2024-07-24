@@ -6,7 +6,8 @@ def main():
         n=7,
         m=4
     )
-    data = "1010110"
+    data = "1111111"
+    print(hamming.decode(data))
 
 
 if __name__ == '__main__':
