@@ -35,7 +35,6 @@ def main(receiver_type: str, n: int = None, m: int = None, generator: str = None
                 print(f"Final data received: {data}")
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process receiver type and its parameters.')
 

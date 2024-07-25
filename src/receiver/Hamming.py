@@ -23,6 +23,9 @@ class Hamming(Receiver):
         self.m = m  # Data bits
         self.k = n - m  # Parity bits
 
+        if n != 2 ** self.k - 1:
+            raise ValueError("Invalid parameters. n should be 2^k - 1")
+
     def _validate_data(self, data: str) -> list[int]:
         """
         Validate data
@@ -31,16 +34,11 @@ class Hamming(Receiver):
         """
         if len(data) != self.n:
             raise ValueError(f"Data length should be {self.n}")
-        return [int(x) for x in data]
 
-    def _extract_data(self, data: list[int]) -> str:
-        """
-        Extract data bits
-        :param data: Data
-        :return: Data bits
-        """
-        parity_bits = [self.n + 1 - 2 ** i for i in range(self.k)]
-        return ''.join([str(data[i]) for i in range(self.n) if i + 1 not in parity_bits])
+        if not all([c in ['0', '1'] for c in data]):
+            raise ValueError("Data should be binary")
+
+        return [int(x) for x in data]
 
     def decode(self, data: str) -> Tuple[str, bool, int]:
         """
@@ -49,34 +47,21 @@ class Hamming(Receiver):
         :return: Decoded data
         """
         data = self._validate_data(data)
+        reversed_data = data[::-1]  # Reverse the data due to the way binary numbers are represented
+        idx_to_check = [idx for idx, value in enumerate(reversed_data, start=1) if value == 1]
+        bin_to_check = [to_binary(idx, padding=self.k) for idx in idx_to_check]
 
-        to_check: list[list[str]] = []
-        idx = self.n  # Start from the last bit
-        pos: int = 0  # Position
-        while pos < self.n:
-            if data[pos] == 1:
-                to_check.append(
-                    list(to_binary(idx, padding=self.k))
-                )
-            idx -= 1
-            pos += 1
+        # Check parity bits
+        error_pos = [0] * self.k
+        for binary in bin_to_check:
+            for i, bit in enumerate(binary):
+                error_pos[i] += int(bit)  # Count the number of 1s
 
-        # Check for error
-        error_pos = ''  # Keeps track of the error position in binary representation
+        error_pos = [str(x % 2) for x in error_pos]  # Get the error position (syndrome)
+        error_pos = int(''.join(error_pos), 2)
 
-        for i in range(self.k):
-            count = 0
-            for position in to_check:
-                count += int(position[i])
-            error_pos += str(count % 2)
+        # Fix the error
+        if error_pos > 0:
+            reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]
 
-        # Convert binary to decimal and invert it
-        error_pos_normal = int(error_pos, 2)
-        error_pos_inverted = (self.n + 1) - int(error_pos, 2)
-
-        if error_pos_normal == 0:  # No error
-            return ''.join([str(c) for c in data]), False, error_pos_normal
-
-        data[error_pos_inverted - 1] = 1 - data[error_pos_inverted - 1]  # Flip the bit
-
-        return ''.join([str(c) for c in data]), True, error_pos_normal
+        return ''.join([str(x) for x in reversed_data[::-1]]), error_pos > 0, error_pos
