@@ -40,7 +40,7 @@ class Hamming(Receiver):
 
         return [int(x) for x in data]
 
-    def decode(self, data: str) -> Tuple[str, bool, int]:
+    def decode(self, data: str) -> Tuple[str, bool, int|str]:
         """
         Decode Hamming code
         :param data: Hamming code
@@ -60,8 +60,16 @@ class Hamming(Receiver):
         error_pos = [str(x % 2) for x in error_pos]  # Get the error position (syndrome)
         error_pos = int(''.join(error_pos), 2)
 
-        # Fix the error
-        if error_pos > 0:
-            reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]
+        # Error detection
+        has_error = error_pos > 0
+        if has_error > 0:
+            count = 0
+            for x in data:
+                count += x
+            if count % 2 == 0:
+                error_pos = "Double bit error detected. Cannot fix."
+            else:
+                reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]  # Flip the bit
+                error_pos = "Single bit error detected. Bit position: " + str(error_pos)
 
-        return ''.join([str(x) for x in reversed_data[::-1]]), error_pos > 0, error_pos
+        return ''.join([str(x) for x in reversed_data[::-1]]), has_error, error_pos

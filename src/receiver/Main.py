@@ -23,7 +23,7 @@ def main(receiver_type: str, n: int = None, m: int = None, generator: str = None
             data, error, error_pos = receiver.decode(line.strip())
             if receiver_type.upper() == "HAMMING":
                 if error:
-                    print(f"Error found at position {error_pos}. Fixed.")
+                    print(f"Error found: {error_pos}")
                 else:
                     print("No flipped bits.")
                 print(f"Final data received: {data}")
