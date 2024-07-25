@@ -31,6 +31,7 @@ async function main () {
                 }
                 const n = parseInt(args[1]);
                 const m = parseInt(args[2]);
+                console.log('Encoding: ', codes)
                 encodedCodes = codes.map(code => {
                     const trimmedCode = code.replace('\r', '');
                     const bits = trimmedCode.split('').map(Number);
