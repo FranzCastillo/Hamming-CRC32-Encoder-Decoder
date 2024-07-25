@@ -57,9 +57,7 @@ const hamming = (dataBits, n, m) => {
         pointerIndex--;
     }
     // Calculate parity bits
-    console.log('fullBits:', fullBits);
     const parityBits = calculateParityBits(fullBits, parityMatrix, n);
-    console.log('parityBits:', parityBits);
     // Insert calculated parity bits into their correct positions
     let parityIndex = 0;
     let parityPointer = n-1;
