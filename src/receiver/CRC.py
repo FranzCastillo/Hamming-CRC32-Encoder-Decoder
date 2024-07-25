@@ -1,18 +1,22 @@
 from Receiver import Receiver
 
 
-def parse_generator(generator: str) -> list[int]:
-    parsed = [bool(x) for x in generator]
-
-    if len(parsed) != 4:
-        raise ValueError("The polynomial should have 4 bits (x^3, x^2, x^1, x^0)")
-
-    return parsed
-
-
 class CRC(Receiver):
     def __init__(self, generator: str):
-        self.generator = parse_generator(generator)
+        self.generator = generator
 
     def decode(self, data: str):
-        print(self.generator)
+        w_data = list(data.lstrip('0'))
+        while len(w_data) >= len(self.generator):
+            for i in range(len(self.generator)):
+                w_data[i] = '0' if w_data[i] == self.generator[i] else '1'  # XOR
+
+            w_data = list(
+                ''.join(w_data).lstrip('0')
+            )
+
+        # If the syndrome is full of 0s, then there is no error
+        has_error = len(w_data) > 0
+
+        return data, has_error, ''.join(w_data).zfill(len(self.generator))
+

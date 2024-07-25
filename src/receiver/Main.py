@@ -21,10 +21,19 @@ def main(receiver_type: str, n: int = None, m: int = None, generator: str = None
             print('===============================')
             print(f"Received: {line.strip()}")
             data, error, error_pos = receiver.decode(line.strip())
-            if error:
-                print(f"Error at position {error_pos}. Fixed.")
+            if receiver_type.upper() == "HAMMING":
+                if error:
+                    print(f"Error found at position {error_pos}. Fixed.")
+                else:
+                    print("No flipped bits.")
+                print(f"Final data received: {data}")
+            else:  # CRC
+                if error:
+                    print(f"An error was found. Syndrome: {error_pos}")
+                else:
+                    print("No error was found.")
+                print(f"Final data received: {data}")
 
-            print(f"Data: {data}")
 
 
 if __name__ == '__main__':
