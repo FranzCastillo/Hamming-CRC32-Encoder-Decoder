@@ -34,7 +34,8 @@ async function main () {
                 encodedCodes = codes.map(code => {
                     const trimmedCode = code.replace('\r', '');
                     const bits = trimmedCode.split('').map(Number);
-                    return hamming(bits, n, m).join('');
+                    const result = hamming(bits, n, m).join('')
+                    return result;
                 });
             }
         }

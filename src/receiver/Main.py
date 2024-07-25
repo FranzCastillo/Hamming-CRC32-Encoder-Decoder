@@ -14,7 +14,7 @@ def main(receiver_type: str, n: int = None, m: int = None, generator: str = None
         raise ValueError("Invalid receiver type or missing parameters")
 
     # Read the file
-    with open("../data/to_decode.txt", "r") as file:
+    with open("src/data/to_decode.txt", "r") as file:
         # Get each line
         for line in file:
             # Decode the line
