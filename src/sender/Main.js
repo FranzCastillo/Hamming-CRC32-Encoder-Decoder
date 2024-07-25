@@ -32,7 +32,8 @@ async function main () {
                 const n = parseInt(args[1]);
                 const m = parseInt(args[2]);
                 encodedCodes = codes.map(code => {
-                    const bits = code.split('').map(Number);
+                    const trimmedCode = code.replace('\r', '');
+                    const bits = trimmedCode.split('').map(Number);
                     return hamming(bits, n, m).join('');
                 });
             }
