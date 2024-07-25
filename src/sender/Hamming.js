@@ -30,11 +30,11 @@ function calculateParityBits(dataBits, parityMatrix) {
 
 const hamming = (dataBits, n, m) => {
     //check if the length of dataBits is correct
-    if (dataBits.length !== n-m) {
-        throw new Error(`The length of dataBits must be ${n-m}`);
+    if (dataBits.length !== m) {
+        throw new Error(`The length of dataBits must be ${m}`);
     }
 
-    const parityMatrix = generateParityMatrix(m, n);
+    const parityMatrix = generateParityMatrix(n-m, n);
 
     const parityBits = calculateParityBits(dataBits, parityMatrix)
 
