@@ -4,7 +4,7 @@ from Hamming import Hamming
 from CRC import CRC
 
 
-def main(receiver_type: str, n: str = None, m: str = None, generator: str = None):
+def main(receiver_type: str, n: int = None, m: int = None, generator: str = None):
     receiver: Receiver | None = None
     if receiver_type.upper() == "HAMMING" and n is not None and m is not None:
         receiver = Hamming(n=int(n), m=int(m))
@@ -28,11 +28,21 @@ def main(receiver_type: str, n: str = None, m: str = None, generator: str = None
 
 
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser(description="Specify the type of receiver to be used.")
-    parser.add_argument("receiver_type", type=str, help="The type of receiver (e.g., 'Hamming' or 'CRC')")
-    parser.add_argument("n", nargs='?', type=int, help="Parameter n for Hamming code", default=None)
-    parser.add_argument("m", nargs='?', type=int, help="Parameter m for Hamming code", default=None)
-    parser.add_argument("generator", nargs='?', type=str, help="Generator polynomial for CRC", default=None)
+    parser = argparse.ArgumentParser(description='Process receiver type and its parameters.')
+
+    parser.add_argument('receiver_type', choices=['CRC', 'HAMMING'],
+                        help='Type of receiver. Can be either CRC or HAMMING.')
+
+    # CRC specific argument
+    parser.add_argument('--generator', type=str,
+                        help='Polynomial generator for CRC. Required if receiver type is CRC.')
+
+    # HAMMING specific arguments
+    parser.add_argument('--n', type=int,
+                        help='n parameter for Hamming. Required if receiver type is HAMMING.')
+    parser.add_argument('--m', type=int,
+                        help='m parameter for Hamming. Required if receiver type is HAMMING.')
+
     args = parser.parse_args()
 
-    main(args.receiver_type, args.n, args.m, args.generator)
+    main(receiver_type=args.receiver_type, n=args.n, m=args.m, generator=args.generator)
