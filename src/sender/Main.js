@@ -20,8 +20,11 @@ async function main () {
                     throw new Error('Generator polynomial is not provided, use: yarn start crc <generator>');
                 }
                 const generator = args[1];
+                console.log('Encoding: ', codes)
                 encodedCodes = codes.map(code => {
-                    return crc32(code, generator).toString(16);
+                    const data = code.substring(0, code.length - 3);
+                    const checksum = crc32(code, generator).toString(16);
+                    return data+checksum;
                 });
                 
             } else {
