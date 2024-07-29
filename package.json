@@ -8,5 +8,10 @@
         "start": "node src/sender/Main.js"
     },
     "author": "Andrés Montoya",
-    "license": "MIT"
+    "license": "MIT",
+    "dependencies": {
+        "dotenv": "^16.4.5",
+        "readline-sync": "^1.4.10",
+        "ws": "^8.18.0"
+    }
 }

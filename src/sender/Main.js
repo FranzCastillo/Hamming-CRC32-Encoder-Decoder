@@ -1,53 +1,64 @@
-import { promises as fs } from 'fs';
-import hamming from './Hamming.js';
-import crc32 from './CRC32.js';
+import rl from 'readline-sync';
+import binary_encode from './Presentation/index.js';
+import hamming from './Link/Hamming.js';
+import crc32 from './Link/CRC32.js';
+import WebSocket from 'ws';
+import transmit from './Transmission/index.js';
+import dotenv from 'dotenv';
 
 async function main () {
     try {
-        const data = await fs.readFile('src/data/to_encode.txt', 'utf8');
-        console.log('Reading the file...');
-
-        const codes = data.split('\n').filter(Boolean);
-
+        dotenv.config();
         const args = process.argv.slice(2);
+        const algorithm = args[0];
+        const ip = process.env.SOCKET_IP
+        const port = process.env.SOCKET_PORT
+        console.log('Connecting to the server on '+ip+':'+port);
+        const socket = new WebSocket(`ws://${ip}:${port}`);
+        
+        while(true){
+            let valid = true;
+            const message = rl.question('Enter the message or type "EXIT" to leave: ')
+            if(message === 'EXIT'){
+                break;
+            }
+            const encodedMessage = binary_encode(message);
+            console.log('Binary encoded message:', encodedMessage);
 
-        let encodedCodes;
+            let codes = encodedMessage.split(' ');
+            codes = codes.filter(code => code.length > 0);
 
-        if (args.length > 0) {
-            if (args[0] === "crc") {
-                console.log('Using CRC encoder');
-                if (args.length < 2) {
-                    throw new Error('Generator polynomial is not provided, use: yarn start crc <generator>');
-                }
-                const generator = args[1];
-                console.log('Encoding: ', codes)
-                encodedCodes = codes.map(code => {
-                    const data = code.substring(0, code.length - 3);
+            let encoded = [];
+
+            if (algorithm === "crc") {
+                const generator = process.env.CRC_POLY;
+                encoded = codes.map(code => {
                     const checksum = crc32(code, generator).toString(16);
-                    return data+checksum;
-                });
-                
-            } else {
-                console.log('Using Hamming encoder');
-                if (args.length < 3) {
-                    throw new Error('Generator polynomial is not provided, use: yarn start hamming <n> <m>');
-                }
-                const n = parseInt(args[1]);
-                const m = parseInt(args[2]);
-                console.log('Encoding: ', codes)
-                encodedCodes = codes.map(code => {
+                    return code+checksum;
+                })
+                console.log('Encoded codes:', encoded);
+
+            } else if (algorithm === "hamming") {
+                encoded = codes.map(code => {
                     const trimmedCode = code.replace('\r', '');
                     const bits = trimmedCode.split('').map(Number);
-                    const result = hamming(bits, n, m).join('')
-                    return result;
+                    const first_half = bits.slice(0, 4);
+                    const second_half = bits.slice(4, 8);
+                    const first_result = hamming(first_half, 7, 4).join('')
+                    const second_result = hamming(second_half, 7, 4).join('')
+                    return first_result + second_result;
                 });
+                console.log('Encoded codes:', encoded);
+            } else {
+                console.log('Invalid algorithm');
+                valid = false;
             }
+
+            if(valid){
+                transmit(encoded, algorithm, socket);
+            }
+            
         }
-
-        console.log('Encoded codes:', encodedCodes);
-
-        await fs.writeFile('src/data/to_decode.txt', encodedCodes.join('\n'));
-        console.log('File has been written');
     } catch (err) {
         console.error('Error:', err);
     }
