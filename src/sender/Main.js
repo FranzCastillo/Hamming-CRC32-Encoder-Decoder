@@ -13,6 +13,8 @@ async function main () {
         const algorithm = args[0];
         const ip = process.env.SOCKET_IP
         const port = process.env.SOCKET_PORT
+        const generator = process.env.CRC_POLY;
+        const noiseRate = process.env.NOISE_RATE;
         console.log('Connecting to the server on '+ip+':'+port);
         const socket = new WebSocket(`ws://${ip}:${port}`);
         
@@ -31,7 +33,6 @@ async function main () {
             let encoded = [];
 
             if (algorithm === "crc") {
-                const generator = process.env.CRC_POLY;
                 encoded = codes.map(code => {
                     const checksum = crc32(code, generator).toString(16);
                     return code+checksum;
@@ -55,7 +56,7 @@ async function main () {
             }
 
             if(valid){
-                transmit(encoded, algorithm, socket);
+                transmit(encoded, algorithm, socket, noiseRate);
             }
             
         }

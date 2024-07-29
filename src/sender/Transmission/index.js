@@ -1,5 +1,5 @@
-const transmit = (message, algorithm, websocket) => {
-    const noise_message = noise(message);
+const transmit = (message, algorithm, websocket, noiseRate) => {
+    const noise_message = noise(message, noiseRate);
     console.log('Transmitting message:', noise_message);
     const data = {
         algorithm: algorithm,
@@ -9,11 +9,10 @@ const transmit = (message, algorithm, websocket) => {
     console.log('Message transmitted');
 }
 
-const noise = (message) => {
-    const noise_rate = 1/100; // 1 in 100 bits will be flipped
+const noise = (message, noiseRate) => {
     const noise_message = message.map(code => {
         const noise_code = code.split('').map(bit => {
-            if (Math.random() < noise_rate) {
+            if (Math.random() < noiseRate) {
                 return bit === '0' ? '1' : '0';
             }
             return bit;
