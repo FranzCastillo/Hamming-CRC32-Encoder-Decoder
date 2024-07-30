@@ -3,6 +3,8 @@ from Receiver import Receiver
 
 class CRC(Receiver):
     def __init__(self, generator: str):
+        super().__init__()
+        self.type = "CRC"
         self.generator = generator
 
     def decode(self, data: str):

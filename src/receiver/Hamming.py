@@ -1,4 +1,5 @@
 from typing import Tuple
+
 from Receiver import Receiver
 
 
@@ -19,6 +20,8 @@ class Hamming(Receiver):
         :param n:
         :param m:
         """
+        super().__init__()
+        self.type = "HAMMING"
         self.n = n  # Total bits
         self.m = m  # Data bits
         self.k = n - m  # Parity bits
@@ -40,7 +43,7 @@ class Hamming(Receiver):
 
         return [int(x) for x in data]
 
-    def decode(self, data: str) -> Tuple[str, bool, int|str]:
+    def decode(self, data: str) -> Tuple[str, bool, int | str]:
         """
         Decode Hamming code
         :param data: Hamming code
@@ -69,7 +72,23 @@ class Hamming(Receiver):
             if count % 2 == 0:
                 error_pos = "Double bit error detected. Cannot fix."
             else:
+                has_error = False  # Single bit error can be fixed
                 reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]  # Flip the bit
                 error_pos = "Single bit error detected. Bit position: " + str(error_pos)
 
         return ''.join([str(x) for x in reversed_data[::-1]]), has_error, error_pos
+
+    def extract_data(self, data: str) -> str:
+        """
+        Extract data from Hamming code
+        :param data: Hamming code
+        :return: Extracted data
+        """
+        parity_idxs = [2 ** i for i in range(self.k)]
+        data_reversed = self._validate_data(data)[::-1]
+        result = ""
+        for i in range(0, self.n):
+            if i + 1 not in parity_idxs:
+                result += str(data_reversed[i])
+
+        return ''.join(list(result)[::-1])
