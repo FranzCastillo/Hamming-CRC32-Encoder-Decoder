@@ -2,7 +2,7 @@ import rl from 'readline-sync';
 import binary_encode from './Presentation/index.js';
 import hamming from './Link/Hamming.js';
 import crc32 from './Link/CRC32.js';
-import WebSocket from 'ws';
+import net from 'net';
 import transmit from './Transmission/index.js';
 import dotenv from 'dotenv';
 
@@ -15,8 +15,15 @@ async function main () {
         const port = process.env.SOCKET_PORT
         const generator = process.env.CRC_POLY;
         const noiseRate = process.env.NOISE_RATE;
-        console.log('Connecting to the server on '+ip+':'+port);
-        const socket = new WebSocket(`ws://${ip}:${port}`);
+        
+        const socket = new net.Socket();
+
+        socket.connect(port, ip, () => {
+            console.log('Connecting to the server on '+ip+':'+port);
+        });
+        socket.on('error', (err) => {
+            console.error('Error: ' + err);
+        });
         
         while(true){
             let valid = true;

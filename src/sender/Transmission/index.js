@@ -1,11 +1,11 @@
-const transmit = (message, algorithm, websocket, noiseRate) => {
+const transmit = (message, algorithm, socket, noiseRate) => {
     const noise_message = noise(message, noiseRate);
     console.log('Transmitting message:', noise_message);
     const data = {
         algorithm: algorithm,
         message: noise_message
     }
-    websocket.send(JSON.stringify(data));
+    socket.write(JSON.stringify(data));
     console.log('Message transmitted');
 }
 
