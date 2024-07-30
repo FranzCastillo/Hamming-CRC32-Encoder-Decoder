@@ -22,3 +22,5 @@ class CRC(Receiver):
 
         return data, has_error, ''.join(w_data).zfill(len(self.generator))
 
+    def extract_data(self, data: str):
+        return data[:-len(self.generator) + 1]

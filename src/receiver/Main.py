@@ -41,13 +41,22 @@ def decode_message(receiver: Receiver, message: Message) -> str:
 
             # Parse the 8 bits into a character
             result += chr(int(result_bin, 2))
-
     elif receiver.type == "CRC":
-        pass
+        for char in message.message:
+            # Decode each character
+            decoded, has_error, _ = receiver.decode(char)
+
+            if has_error:
+                raise ValueError(f"Error detected. Cannot fix. Message so far: '{result}'")
+
+            # Extract the data
+            result_bin = receiver.extract_data(decoded)
+            result += chr(int(result_bin, 2))
     else:
         raise ValueError(f"Invalid receiver type: {receiver.type}")
 
     return result
+
 
 def main():
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
