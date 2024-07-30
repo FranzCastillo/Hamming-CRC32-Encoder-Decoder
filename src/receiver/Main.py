@@ -1,38 +1,42 @@
 import argparse
-from Receiver import Receiver
-from Hamming import Hamming
+import os
+import sys
+import socket
+
+from dotenv import load_dotenv
+
 from CRC import CRC
+from Hamming import Hamming
+from Receiver import Receiver
 
 
-def main(receiver_type: str, n: int = None, m: int = None, generator: str = None):
-    receiver: Receiver | None = None
-    if receiver_type.upper() == "HAMMING" and n is not None and m is not None:
-        receiver = Hamming(n=int(n), m=int(m))
-    elif receiver_type.upper() == "CRC" and generator is not None:
-        receiver = CRC(generator=generator)
-    else:
-        raise ValueError("Invalid receiver type or missing parameters")
+def main(receiver: Receiver):
+    with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
+        # Read dotenv
+        load_dotenv()
+        host = os.getenv('SOCKET_IP')
+        port = int(os.getenv('SOCKET_PORT'))
 
-    # Read the file
-    with open("src/data/to_decode.txt", "r") as file:
-        # Get each line
-        for line in file:
-            # Decode the line
-            print('===============================')
-            print(f"Received: {line.strip()}")
-            data, error, error_pos = receiver.decode(line.strip())
-            if receiver_type.upper() == "HAMMING":
-                if error:
-                    print(f"Error found: {error_pos}")
-                else:
-                    print("No flipped bits.")
-                print(f"Final data received: {data}")
-            else:  # CRC
-                if error:
-                    print(f"An error was found. Syndrome: {error_pos}")
-                else:
-                    print("No error was found.")
-                print(f"Final data received: {data}")
+        s.bind((host, port))
+        print(f"Socket bound to {host}:{port}")
+
+        s.listen()
+        print("Socket is listening")
+
+        conn, addr = s.accept()
+        with conn:
+            print(f"Connected by {addr}")
+
+            while True:
+                data = conn.recv(1024)
+                if not data:
+                    break
+                print(f"Received: {data.decode()}")
+                response = receiver.decode(data.decode())
+                print(f"Response: {response}")
+
+    print("Closing socket and exiting program.")
+    sys.exit(0)
 
 
 if __name__ == '__main__':
@@ -53,4 +57,16 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
 
-    main(receiver_type=args.receiver_type, n=args.n, m=args.m, generator=args.generator)
+    receiver: Receiver | None = None
+    receiver_type: str = args.receiver_type
+    if receiver_type.upper() == "CRC":
+        generator = args.generator
+        receiver = CRC(generator=generator)
+    elif receiver_type.upper() == "HAMMING":
+        n = args.n
+        m = args.m
+        receiver = Hamming(n=n, m=m)
+    else:
+        raise ValueError("Invalid receiver type or missing parameters")
+
+    main(receiver)
