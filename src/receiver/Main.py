@@ -79,12 +79,17 @@ def main():
                 data = conn.recv(1024)
                 if not data:
                     break
-                decoded_data = data.decode()
-                message = Message(**json.loads(decoded_data))
+                try:
+                    decoded_data = data.decode()
+                    message = Message(**json.loads(decoded_data))
 
-                receiver = create_receiver(message.algorithm)
-                decoded_message = decode_message(receiver, message)
-                print(f"Decoded message: {decoded_message}")
+                    receiver = create_receiver(message.algorithm)
+                    decoded_message = decode_message(receiver, message)
+                    print(f"Decoded message: {decoded_message}")
+
+                    # Clear the buffer
+                except Exception as e:
+                    print(f"Error: {e}")
 
     print("Closing socket and exiting program.")
     sys.exit(0)
