@@ -71,6 +71,8 @@ class Hamming(Receiver):
         if has_error:  # Single bit error can be fixed
             has_error = False
             reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]  # Flip the bit
+            idx_to_check = [idx for idx, value in enumerate(reversed_data, start=1) if value == 1]
+            bin_to_check = [to_binary(idx, padding=self.k) for idx in idx_to_check]
             error_pos = "Single bit error detected. Bit position: " + str(error_pos)
 
         if self._has_error(bin_to_check)[0]:  # Double bit error
