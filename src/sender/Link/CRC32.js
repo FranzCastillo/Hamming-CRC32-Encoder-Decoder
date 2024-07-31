@@ -4,7 +4,7 @@ function crc32(data, generator) {
     let generatorArray = generator.split('').map(Number);
 
     // XOR operation
-    for (let i = 0; i <= dataArray.length - generatorArray.length; ) {
+    for (let i = 0; i <= dataArray.length - generatorArray.length;) {
         for (let j = 0; j < generatorArray.length; j++) {
             dataArray[i + j] ^= generatorArray[j];
         }
@@ -12,7 +12,7 @@ function crc32(data, generator) {
             i++;
         }
     }
-    
+
     // Return the remainder
     return dataArray.slice(-generatorArray.length + 1).join('');
 }

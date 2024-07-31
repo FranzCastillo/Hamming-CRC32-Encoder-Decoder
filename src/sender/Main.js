@@ -6,7 +6,7 @@ import net from 'net';
 import transmit from './Transmission/index.js';
 import dotenv from 'dotenv';
 
-async function main () {
+async function main() {
     try {
         dotenv.config();
         const args = process.argv.slice(2);
@@ -15,33 +15,33 @@ async function main () {
         const port = process.env.SOCKET_PORT
         const generator = process.env.CRC_POLY;
         const noiseRate = process.env.NOISE_RATE;
-        
+
         const socket = new net.Socket();
 
-        console.log('Awaiting connection to the server on '+ip+':'+port);
+        console.log('Awaiting connection to the server on ' + ip + ':' + port);
         socket.connect(port, ip, () => {
-            console.log('Connected to the server on '+ip+':'+port);
-            while(true){
+            console.log('Connected to the server on ' + ip + ':' + port);
+            while (true) {
                 let valid = true;
                 const message = rl.question('Enter the message or type "EXIT" to leave: ')
-                if(message === 'EXIT'){
+                if (message === 'EXIT') {
                     break;
                 }
                 const encodedMessage = binary_encode(message);
                 console.log('Binary encoded message:', encodedMessage);
-    
+
                 let codes = encodedMessage.split(' ');
                 codes = codes.filter(code => code.length > 0);
-    
+
                 let encoded = [];
-    
+
                 if (algorithm === "crc") {
                     encoded = codes.map(code => {
                         const checksum = crc32(code, generator).toString(16);
-                        return code+checksum;
+                        return code + checksum;
                     })
                     console.log('Encoded codes:', encoded);
-    
+
                 } else if (algorithm === "hamming") {
                     encoded = codes.map(code => {
                         const trimmedCode = code.replace('\r', '');
@@ -57,17 +57,17 @@ async function main () {
                     console.log('Invalid algorithm');
                     valid = false;
                 }
-    
-                if(valid){
-                    transmit(encoded, algorithm, socket, noiseRate);
+
+                if (valid) {
+                    transmit(encoded, algorithm, socket, noiseRate, '561564546456');
                 }
-                
+
             }
         });
         socket.on('error', (err) => {
             console.error('Error: ' + err);
         });
-        
+
     } catch (err) {
         console.error('Error:', err);
     }

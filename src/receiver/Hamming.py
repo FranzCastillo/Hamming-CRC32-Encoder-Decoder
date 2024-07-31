@@ -43,6 +43,18 @@ class Hamming(Receiver):
 
         return [int(x) for x in data]
 
+    def _has_error(self, bin_to_check: list[str]) -> Tuple[bool, int]:
+        # Check parity bits
+        error_pos = [0] * self.k
+        for binary in bin_to_check:
+            for i, bit in enumerate(binary):
+                error_pos[i] += int(bit)  # Count the number of 1s
+
+        error_pos = [str(x % 2) for x in error_pos]  # Get the error position (syndrome)
+        error_pos = int(''.join(error_pos), 2)
+
+        return error_pos > 0, error_pos
+
     def decode(self, data: str) -> Tuple[str, bool, int | str]:
         """
         Decode Hamming code
@@ -53,28 +65,17 @@ class Hamming(Receiver):
         reversed_data = data[::-1]  # Reverse the data due to the way binary numbers are represented
         idx_to_check = [idx for idx, value in enumerate(reversed_data, start=1) if value == 1]
         bin_to_check = [to_binary(idx, padding=self.k) for idx in idx_to_check]
-
-        # Check parity bits
-        error_pos = [0] * self.k
-        for binary in bin_to_check:
-            for i, bit in enumerate(binary):
-                error_pos[i] += int(bit)  # Count the number of 1s
-
-        error_pos = [str(x % 2) for x in error_pos]  # Get the error position (syndrome)
-        error_pos = int(''.join(error_pos), 2)
-
         # Error detection
-        has_error = error_pos > 0
-        if has_error > 0:
-            count = 0
-            for x in data:
-                count += x
-            if count % 2 == 0:
-                error_pos = "Double bit error detected. Cannot fix."
-            else:
-                has_error = False  # Single bit error can be fixed
-                reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]  # Flip the bit
-                error_pos = "Single bit error detected. Bit position: " + str(error_pos)
+        has_error, error_pos = self._has_error(bin_to_check)
+
+        if has_error:  # Single bit error can be fixed
+            has_error = False
+            reversed_data[error_pos - 1] = 1 - reversed_data[error_pos - 1]  # Flip the bit
+            error_pos = "Single bit error detected. Bit position: " + str(error_pos)
+
+        if self._has_error(bin_to_check)[0]:  # Double bit error
+            has_error = True
+            error_pos = "Double bit error detected. Cannot fix."
 
         return ''.join([str(x) for x in reversed_data[::-1]]), has_error, error_pos
 
